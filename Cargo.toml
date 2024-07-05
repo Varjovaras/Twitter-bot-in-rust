@@ -4,7 +4,14 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+apalis = { version = "0.5.3", features = ["cron"] }
 axum = "0.7.3"
+chrono = { version = "0.4.38", features = ["serde", "clock"] }
+serde = { version = "1.0.203", features = ["derive"] }
 shuttle-axum = "0.46.0"
 shuttle-runtime = "0.46.0"
+shuttle-shared-db = { version = "0.46.0", features = ["postgres"] }
+sqlx = { version = "0.7.4", features = ["runtime-tokio-native-tls", "postgres"] }
 tokio = "1.28.2"
+tower = "0.4.13"
+twapi-v2 = "0.15.1"
