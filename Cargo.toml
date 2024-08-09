@@ -12,7 +12,7 @@ shuttle-axum = "0.46.0"
 shuttle-runtime = "0.46.0"
 shuttle-shared-db = { version = "0.46.0", features = ["postgres"] }
 sqlx = { version = "0.7.4", features = ["runtime-tokio-native-tls", "postgres"] }
-tokio = { version = "1.28.2", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1.28.2", features = ["full"] }
 tower = "0.4.13"
 twapi-v2 = {version="0.15.1", features = ["upload", "oauth10a"]}
 dotenv = "0.15.0"
