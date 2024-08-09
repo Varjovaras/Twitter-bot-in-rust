@@ -12,6 +12,13 @@ shuttle-axum = "0.46.0"
 shuttle-runtime = "0.46.0"
 shuttle-shared-db = { version = "0.46.0", features = ["postgres"] }
 sqlx = { version = "0.7.4", features = ["runtime-tokio-native-tls", "postgres"] }
-tokio = "1.28.2"
+tokio = { version = "1.28.2", features = ["macros", "rt-multi-thread"] }
 tower = "0.4.13"
-twapi-v2 = "0.15.1"
+twapi-v2 = {version="0.15.1", features = ["upload", "oauth10a"]}
+dotenv = "0.15.0"
+anyhow = "1"
+tracing = "0.1"
+tracing-bunyan-formatter = "0.3"
+tracing-subscriber = "0.3"
+tokio-cron-scheduler = "0.9"
+

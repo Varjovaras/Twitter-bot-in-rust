@@ -1,39 +1,77 @@
-use apalis::prelude::{Job, JobContext};
-use chrono::{DateTime, Utc};
-use serde::{Deserialize, Serialize};
+use dotenv::dotenv;
+use tokio_cron_scheduler::{Job, JobScheduler};
+use twapi_v2::{
+    api::post_2_tweets::{self, Media},
+    error::Error,
+    oauth10a::OAuthAuthentication,
+    upload::{self, check_processing, media_category::MediaCategory},
+};
 
-#[derive(Default, Debug, Clone, Serialize, Deserialize)]
-struct Reminder(DateTime<Utc>);
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
+    let scheduler = JobScheduler::new().await?;
 
-impl From<DateTime<Utc>> for Reminder {
-    fn from(t: DateTime<Utc>) -> Self {
-        Reminder(t)
+    // Create a job that runs every Friday at midnight
+    let job = Job::new_async("0 0 * * FRI", |_uuid, _l| {
+        Box::pin(async {
+            match run_tweet_job().await {
+                Ok(_) => println!("Tweet job completed successfully"),
+                Err(e) => eprintln!("Tweet job failed: {:?}", e),
+            }
+        })
+    })?;
+
+    // Add the job to the scheduler
+    scheduler.add(job).await?;
+
+    // Start the scheduler
+    scheduler.start().await?;
+
+    // Keep the main thread running
+    loop {
+        tokio::time::sleep(std::time::Duration::from_secs(60)).await;
     }
 }
 
-// set up an identifier for apalis
-impl Job for Reminder {
-    const NAME: &'static str = "reminder::DailyReminder";
+async fn run_tweet_job() -> anyhow::Result<()> {
+    dotenv().ok();
+    let auth = OAuthAuthentication::new(
+        std::env::var("API_KEY").unwrap(),
+        std::env::var("API_SECRET").unwrap(),
+        std::env::var("ACCESS_TOKEN").unwrap(),
+        std::env::var("ACCESS_SECRET").unwrap(),
+    );
+    let (response, _header) = upload::upload_media(
+        &std::path::PathBuf::from("perstai.jpeg"),
+        "img/jpeg",
+        Some(MediaCategory::TweetImage),
+        None,
+        &auth,
+    )
+    .await?;
+    tracing::info!(response =? response, "upload_media");
+    let media_id = response.media_id_string.clone();
+    check_processing(
+        response,
+        &auth,
+        Some(|count, _response: &_, _header: &_| {
+            if count > 100 {
+                Err(Error::Upload("over counst".to_owned()))
+            } else {
+                Ok(())
+            }
+        }),
+    )
+    .await?;
+    let body = post_2_tweets::Body {
+        text: Some("perstai :D".to_string()),
+        media: Some(Media {
+            media_ids: vec![media_id],
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+    let (response, _header) = post_2_tweets::Api::new(body).execute(&auth).await?;
+    tracing::info!(response =? response, "post_2_tweets");
+    Ok(())
 }
-
-#[derive(Clone)]
-struct CronjobData {
-    message: String,
-}
-
-impl CronjobData {
-    fn execute(&self, item: Reminder) {
-        println!("{} from CronjobData::execute()!", &self.message);
-    }
-}
-
-async fn say_hello_world(job: Reminder, ctx: JobContext) {
-    println!("Hello world from send_reminder()!");
-    // this lets you use variables stored in the CronjobData struct
-    let svc = ctx.data_opt::<CronjobData>().unwrap();
-    // this executes CronjobData::execute()
-    svc.execute(job);
-}
-
-//https://www.shuttle.rs/blog/2024/01/24/writing-cronjobs-rust
-//https://github.com/geofmureithi/apalis/blob/master/examples/async-std-runtime/src/main.rs
