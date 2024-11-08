@@ -1003,29 +1003,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2304e00983f87ffb38b55b444b5e3b60a884b5d30c0fca7d82fe33449bbe55ea"
 
 [[package]]
-name = "hello-world"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "apalis",
- "axum 0.7.5",
- "chrono",
- "dotenv",
- "serde",
- "shuttle-axum",
- "shuttle-runtime",
- "shuttle-shared-db",
- "sqlx",
- "tokio",
- "tokio-cron-scheduler",
- "tower",
- "tracing",
- "tracing-bunyan-formatter",
- "tracing-subscriber",
- "twapi-v2",
-]
-
-[[package]]
 name = "hermit-abi"
 version = "0.3.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1717,6 +1694,29 @@ name = "percent-encoding"
 version = "2.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e3148f5046208a5d56bcfc03053e3ca6334e51da8dfb19b6cdc8b306fae3283e"
+
+[[package]]
+name = "perstai"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "apalis",
+ "axum 0.7.5",
+ "chrono",
+ "dotenv",
+ "serde",
+ "shuttle-axum",
+ "shuttle-runtime",
+ "shuttle-shared-db",
+ "sqlx",
+ "tokio",
+ "tokio-cron-scheduler",
+ "tower",
+ "tracing",
+ "tracing-bunyan-formatter",
+ "tracing-subscriber",
+ "twapi-v2",
+]
 
 [[package]]
 name = "phf"
