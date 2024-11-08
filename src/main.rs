@@ -35,7 +35,7 @@ async fn main() -> anyhow::Result<()> {
 
     // Keep the main thread running
     loop {
-        tokio::time::sleep(std::time::Duration::from_secs(60)).await;
+        tokio::time::sleep(std::time::Duration::from_secs(200)).await;
     }
 }
 
