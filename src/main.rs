@@ -14,7 +14,7 @@ async fn main() -> anyhow::Result<()> {
     dbg!(chrono::Utc::now());
 
     // of any day in March and June that is a Friday of the year 2017.
-    let job = Job::new_async("0 45 06 * * Fri *", |_uuid, _l| {
+    let tweet_job = Job::new_async("0 45 06 * * Fri *", |_uuid, _l| {
         println!(":D");
         Box::pin(async {
             match run_tweet_job().await {
@@ -27,8 +27,14 @@ async fn main() -> anyhow::Result<()> {
         })
     })?;
 
+    let time_job = Job::new_async("0 * * * * * *", |_uuid, _l| {
+        Box::pin(async {
+            println!("{:?}", chrono::Utc::now());
+        })
+    })?;
     // Add the job to the scheduler
-    scheduler.add(job).await?;
+    scheduler.add(tweet_job).await?;
+    scheduler.add(time_job).await?;
 
     // Start the scheduler
     scheduler.start().await?;
