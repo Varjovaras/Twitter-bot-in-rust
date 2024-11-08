@@ -10,8 +10,7 @@ use twapi_v2::{
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let scheduler = JobScheduler::new().await?;
-    println!("??");
-    dbg!(chrono::Utc::now());
+    println!("Start of bot: {:?}", chrono::Utc::now());
 
     // of any day in March and June that is a Friday of the year 2017.
     let tweet_job = Job::new_async("0 45 06 * * Fri *", |_uuid, _l| {
@@ -29,7 +28,7 @@ async fn main() -> anyhow::Result<()> {
 
     let time_job = Job::new_async("0 * * * * * *", |_uuid, _l| {
         Box::pin(async {
-            println!("{:?}", chrono::Utc::now());
+            println!("Time is now: {:?}", chrono::Utc::now());
         })
     })?;
     // Add the job to the scheduler
