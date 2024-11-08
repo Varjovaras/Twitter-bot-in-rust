@@ -10,12 +10,18 @@ use twapi_v2::{
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let scheduler = JobScheduler::new().await?;
+    println!("??");
+    dbg!(chrono::Utc::now());
 
-    // Create a job that runs every Friday at midnight
-    let job = Job::new_async("0 0 * * FRI", |_uuid, _l| {
+    // of any day in March and June that is a Friday of the year 2017.
+    let job = Job::new_async("0 45 06 * * Fri *", |_uuid, _l| {
+        println!(":D");
         Box::pin(async {
             match run_tweet_job().await {
-                Ok(_) => println!("Tweet job completed successfully"),
+                Ok(_) => println!(
+                    "Tweet job completed successfully, at {:?}",
+                    chrono::Utc::now()
+                ),
                 Err(e) => eprintln!("Tweet job failed: {:?}", e),
             }
         })
@@ -35,6 +41,8 @@ async fn main() -> anyhow::Result<()> {
 
 async fn run_tweet_job() -> anyhow::Result<()> {
     dotenv().ok();
+    println!(":DD");
+
     let auth = OAuthAuthentication::new(
         std::env::var("API_KEY").unwrap(),
         std::env::var("API_SECRET").unwrap(),
