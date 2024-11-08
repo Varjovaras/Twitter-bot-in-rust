@@ -1,7 +1,4 @@
 use dotenv::dotenv;
-use shuttle_runtime::Service;
-use std::time::Duration;
-use tokio::time;
 use tokio_cron_scheduler::{Job, JobScheduler};
 use twapi_v2::{
     api::post_2_tweets::{self, Media},
@@ -10,55 +7,42 @@ use twapi_v2::{
     upload::{self, check_processing, media_category::MediaCategory},
 };
 
-struct MyService {}
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
+    let scheduler = JobScheduler::new().await?;
+    println!("??");
+    dbg!(chrono::Utc::now());
 
-#[shuttle_runtime::async_trait]
-impl shuttle_runtime::Service for MyService {
-    async fn bind(self, _addr: std::net::SocketAddr) -> Result<(), shuttle_runtime::Error> {
-        let scheduler = JobScheduler::new()
-            .await
-            .map_err(|e| shuttle_runtime::Error::from(anyhow::Error::new(e)))?;
-
-        let job = Job::new_async("40 9 * * FRI", |_uuid, _l| {
-            Box::pin(async {
-                match run_tweet_job().await {
-                    Ok(_) => println!("Tweet job completed successfully"),
-                    Err(e) => eprintln!("Tweet job failed: {:?}", e),
-                }
-            })
+    // of any day in March and June that is a Friday of the year 2017.
+    let job = Job::new_async("0 45 06 * * Fri *", |_uuid, _l| {
+        println!(":D");
+        Box::pin(async {
+            match run_tweet_job().await {
+                Ok(_) => println!(
+                    "Tweet job completed successfully, at {:?}",
+                    chrono::Utc::now()
+                ),
+                Err(e) => eprintln!("Tweet job failed: {:?}", e),
+            }
         })
-        .map_err(|e| shuttle_runtime::Error::from(anyhow::Error::new(e)))?;
+    })?;
 
-        scheduler
-            .add(job)
-            .await
-            .map_err(|e| shuttle_runtime::Error::from(anyhow::Error::new(e)))?;
-        scheduler
-            .start()
-            .await
-            .map_err(|e| shuttle_runtime::Error::from(anyhow::Error::new(e)))?;
+    // Add the job to the scheduler
+    scheduler.add(job).await?;
 
-        // Keep the service running
-        loop {
-            tokio::time::sleep(std::time::Duration::from_secs(30)).await;
-        }
+    // Start the scheduler
+    scheduler.start().await?;
+
+    // Keep the main thread running
+    loop {
+        tokio::time::sleep(std::time::Duration::from_secs(60)).await;
     }
-}
-
-#[shuttle_runtime::main]
-async fn main() -> Result<MyService, shuttle_runtime::Error> {
-    let service = MyService {};
-
-    // Bind the service to a random port
-    service
-        .bind(std::net::SocketAddr::from(([0, 0, 0, 0], 0)))
-        .await?;
-
-    Ok(MyService {})
 }
 
 async fn run_tweet_job() -> anyhow::Result<()> {
     dotenv().ok();
+    println!(":DD");
+
     let auth = OAuthAuthentication::new(
         std::env::var("API_KEY").unwrap(),
         std::env::var("API_SECRET").unwrap(),
